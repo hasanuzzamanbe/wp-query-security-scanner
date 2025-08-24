@@ -110,49 +110,72 @@ class WPQuerySecurityScanner {
             return;
         }
 
-        wp_enqueue_style(
-            'wpqss-admin-styles',
-            WPQSS_PLUGIN_URL . 'assets/admin-styles.css',
-            [],
-            WPQSS_VERSION
-        );
+        // Check if built assets exist, otherwise use development assets
+        $use_built_assets = file_exists(WPQSS_PLUGIN_DIR . 'assets/dist/wpqss-app.js');
 
-        // Enqueue Vue.js from CDN
-        wp_enqueue_script(
-            'vue-js',
-            'https://unpkg.com/vue@3/dist/vue.global.js',
-            [],
-            '3.3.4',
-            false
-        );
+        if ($use_built_assets) {
+            // Production: Use built assets
+            wp_enqueue_style(
+                'wpqss-app-styles',
+                WPQSS_PLUGIN_URL . 'assets/dist/wpqss-app.css',
+                [],
+                WPQSS_VERSION
+            );
 
-        wp_enqueue_script(
-            'wpqss-vue-components',
-            WPQSS_PLUGIN_URL . 'assets/vue-components.js',
-            ['vue-js'],
-            WPQSS_VERSION,
-            true
-        );
+            // Enqueue Vue.js from CDN (external dependency)
+            wp_enqueue_script(
+                'vue-js',
+                'https://unpkg.com/vue@3/dist/vue.global.js',
+                [],
+                '3.3.4',
+                false
+            );
 
-        wp_enqueue_script(
-            'wpqss-vue-app',
-            WPQSS_PLUGIN_URL . 'assets/admin-vue-app.js',
-            ['vue-js', 'wpqss-vue-components'],
-            WPQSS_VERSION,
-            true
-        );
+            // Enqueue built Vue app
+            wp_enqueue_script(
+                'wpqss-app',
+                WPQSS_PLUGIN_URL . 'assets/dist/wpqss-app.js',
+                ['vue-js'],
+                WPQSS_VERSION,
+                true
+            );
 
-        wp_localize_script('wpqss-vue-app', 'wpqss_ajax', [
-            'url' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('wpqss_nonce'),
-            'strings' => [
-                'scanning' => __('Scanning...', 'wp-query-security-scanner'),
-                'scan_complete' => __('Scan Complete', 'wp-query-security-scanner'),
-                'scan_error' => __('Scan Error', 'wp-query-security-scanner'),
-                'export_success' => __('Report exported successfully', 'wp-query-security-scanner'),
-                'export_error' => __('Export failed', 'wp-query-security-scanner'),
-            ]
-        ]);
+            wp_localize_script('wpqss-app', 'wpqss_ajax', [
+                'url' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('wpqss_nonce'),
+                'strings' => [
+                    'scanning' => __('Scanning...', 'wp-query-security-scanner'),
+                    'scan_complete' => __('Scan Complete', 'wp-query-security-scanner'),
+                    'scan_error' => __('Scan Error', 'wp-query-security-scanner'),
+                    'export_success' => __('Report exported successfully', 'wp-query-security-scanner'),
+                    'export_error' => __('Export failed', 'wp-query-security-scanner'),
+                ]
+            ]);
+        } else {
+            // Development: Use legacy assets with notice
+            wp_enqueue_style(
+                'wpqss-admin-styles',
+                WPQSS_PLUGIN_URL . 'assets/admin-styles.css',
+                [],
+                WPQSS_VERSION
+            );
+
+            wp_enqueue_script(
+                'vue-js',
+                'https://unpkg.com/vue@3/dist/vue.global.js',
+                [],
+                '3.3.4',
+                false
+            );
+
+            // Show admin notice about building assets
+            add_action('admin_notices', function() {
+                echo '<div class="notice notice-warning"><p>';
+                echo '<strong>WP Query Security Scanner:</strong> ';
+                echo 'Vue.js assets not built. Run <code>npm run build</code> to build production assets.';
+                echo '</p></div>';
+            });
+        }
     }
 
     public function ajax_scan_plugins() {

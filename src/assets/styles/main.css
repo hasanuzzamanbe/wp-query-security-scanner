@@ -1,0 +1,334 @@
+/**
+ * WP Query Security Scanner - Main Styles
+ * Vue.js Application Styles
+ */
+
+/* Vue.js specific styles */
+[v-cloak] {
+  display: none !important;
+}
+
+/* Base application styles */
+.wpqss-app {
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* WordPress Dashicons support */
+.dashicons {
+  font-family: dashicons;
+  display: inline-block;
+  line-height: 1;
+  font-weight: normal;
+  font-style: normal;
+  speak: never;
+  text-decoration: inherit;
+  text-transform: none;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+  vertical-align: top;
+  text-align: center;
+  transition: color 0.1s ease-in;
+}
+
+/* Common button styles */
+.wpqss-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  line-height: 1;
+}
+
+.wpqss-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.wpqss-btn:focus {
+  outline: 2px solid #667eea;
+  outline-offset: 2px;
+}
+
+/* Button variants */
+.wpqss-btn-primary {
+  background: #667eea;
+  color: white;
+  border: 1px solid #667eea;
+}
+
+.wpqss-btn-primary:hover:not(:disabled) {
+  background: #5a67d8;
+  border-color: #5a67d8;
+  transform: translateY(-1px);
+}
+
+.wpqss-btn-secondary {
+  background: #6c757d;
+  color: white;
+  border: 1px solid #6c757d;
+}
+
+.wpqss-btn-secondary:hover:not(:disabled) {
+  background: #5a6268;
+  border-color: #5a6268;
+  transform: translateY(-1px);
+}
+
+.wpqss-btn-outline {
+  background: transparent;
+  color: #667eea;
+  border: 1px solid #667eea;
+}
+
+.wpqss-btn-outline:hover:not(:disabled) {
+  background: #667eea;
+  color: white;
+  transform: translateY(-1px);
+}
+
+/* Select styles */
+.wpqss-select-compact {
+  padding: 8px 12px;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  background: white;
+  color: #333;
+  font-size: 14px;
+  min-width: 150px;
+  transition: border-color 0.2s ease;
+}
+
+.wpqss-select-compact:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+}
+
+.wpqss-select-compact:disabled {
+  background: #f8f9fa;
+  color: #6c757d;
+  cursor: not-allowed;
+}
+
+/* Card styles */
+.wpqss-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.wpqss-card-header {
+  background: #f8f9fa;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.wpqss-card-body {
+  padding: 20px 24px;
+}
+
+/* Utility classes */
+.wpqss-text-center {
+  text-align: center;
+}
+
+.wpqss-text-left {
+  text-align: left;
+}
+
+.wpqss-text-right {
+  text-align: right;
+}
+
+.wpqss-mb-0 { margin-bottom: 0; }
+.wpqss-mb-1 { margin-bottom: 8px; }
+.wpqss-mb-2 { margin-bottom: 16px; }
+.wpqss-mb-3 { margin-bottom: 24px; }
+.wpqss-mb-4 { margin-bottom: 32px; }
+
+.wpqss-mt-0 { margin-top: 0; }
+.wpqss-mt-1 { margin-top: 8px; }
+.wpqss-mt-2 { margin-top: 16px; }
+.wpqss-mt-3 { margin-top: 24px; }
+.wpqss-mt-4 { margin-top: 32px; }
+
+.wpqss-p-0 { padding: 0; }
+.wpqss-p-1 { padding: 8px; }
+.wpqss-p-2 { padding: 16px; }
+.wpqss-p-3 { padding: 24px; }
+.wpqss-p-4 { padding: 32px; }
+
+/* Flexbox utilities */
+.wpqss-flex {
+  display: flex;
+}
+
+.wpqss-flex-column {
+  flex-direction: column;
+}
+
+.wpqss-flex-wrap {
+  flex-wrap: wrap;
+}
+
+.wpqss-justify-center {
+  justify-content: center;
+}
+
+.wpqss-justify-between {
+  justify-content: space-between;
+}
+
+.wpqss-align-center {
+  align-items: center;
+}
+
+.wpqss-align-start {
+  align-items: flex-start;
+}
+
+.wpqss-gap-1 { gap: 8px; }
+.wpqss-gap-2 { gap: 16px; }
+.wpqss-gap-3 { gap: 24px; }
+
+/* Grid utilities */
+.wpqss-grid {
+  display: grid;
+}
+
+.wpqss-grid-cols-1 {
+  grid-template-columns: repeat(1, 1fr);
+}
+
+.wpqss-grid-cols-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.wpqss-grid-cols-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.wpqss-grid-cols-auto {
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+/* Color utilities */
+.wpqss-text-primary { color: #667eea; }
+.wpqss-text-secondary { color: #6c757d; }
+.wpqss-text-success { color: #28a745; }
+.wpqss-text-danger { color: #dc3545; }
+.wpqss-text-warning { color: #ffc107; }
+.wpqss-text-info { color: #17a2b8; }
+.wpqss-text-muted { color: #6c757d; }
+
+.wpqss-bg-primary { background-color: #667eea; }
+.wpqss-bg-secondary { background-color: #6c757d; }
+.wpqss-bg-success { background-color: #28a745; }
+.wpqss-bg-danger { background-color: #dc3545; }
+.wpqss-bg-warning { background-color: #ffc107; }
+.wpqss-bg-info { background-color: #17a2b8; }
+.wpqss-bg-light { background-color: #f8f9fa; }
+.wpqss-bg-dark { background-color: #343a40; }
+
+/* Severity colors */
+.severity-critical,
+.wpqss-severity-critical {
+  color: #dc3545 !important;
+}
+
+.severity-high,
+.wpqss-severity-high {
+  color: #fd7e14 !important;
+}
+
+.severity-medium,
+.wpqss-severity-medium {
+  color: #ffc107 !important;
+}
+
+.severity-low,
+.wpqss-severity-low {
+  color: #28a745 !important;
+}
+
+/* Loading spinner */
+.wpqss-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #667eea;
+  border-radius: 50%;
+  animation: wpqss-spin 1s linear infinite;
+}
+
+@keyframes wpqss-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive utilities */
+@media (max-width: 768px) {
+  .wpqss-app {
+    padding: 0 16px;
+  }
+  
+  .wpqss-grid-cols-2,
+  .wpqss-grid-cols-3 {
+    grid-template-columns: 1fr;
+  }
+  
+  .wpqss-flex-mobile-column {
+    flex-direction: column;
+  }
+  
+  .wpqss-text-mobile-center {
+    text-align: center;
+  }
+}
+
+/* Focus styles for accessibility */
+*:focus {
+  outline: 2px solid #667eea;
+  outline-offset: 2px;
+}
+
+button:focus,
+select:focus,
+input:focus {
+  outline: 2px solid #667eea;
+  outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+  .wpqss-scan-controls-compact,
+  .wpqss-debug-panel {
+    display: none !important;
+  }
+  
+  .wpqss-app {
+    max-width: none;
+    margin: 0;
+  }
+  
+  .wpqss-card {
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+}

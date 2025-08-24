@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>WP Query Security Scanner - Development</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f1f1f1;
+        }
+        .dev-notice {
+            background: #0073aa;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dev-notice">
+        <strong>Development Mode</strong> - This is for development only. In production, this will be embedded in WordPress.
+    </div>
+    
+    <div id="wpqss-vue-app"></div>
+    
+    <!-- Mock WordPress AJAX object for development -->
+    <script>
+        window.wpqss_ajax = {
+            url: '/wp-admin/admin-ajax.php',
+            nonce: 'dev-nonce-123',
+            strings: {
+                scanning: 'Scanning...',
+                scan_complete: 'Scan Complete',
+                scan_error: 'Scan Error',
+                export_success: 'Report exported successfully',
+                export_error: 'Export failed'
+            }
+        };
+        
+        // Mock Vue for development if not loaded from CDN
+        if (typeof Vue === 'undefined') {
+            console.warn('Vue.js not loaded from CDN, using bundled version');
+        }
+    </script>
+</body>
+</html>

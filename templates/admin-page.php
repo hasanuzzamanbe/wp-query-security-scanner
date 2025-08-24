@@ -37,282 +37,30 @@ $has_previous_scan = !empty($last_scan_option);
 
     <!-- Vue.js Application Container -->
     <div id="wpqss-vue-app" v-cloak>
-        <!-- Debug Info -->
-        <div v-if="state" style="background: #f0f0f0; padding: 10px; margin-bottom: 20px; border-radius: 4px;">
-            <strong>Debug Info:</strong><br>
-            Selected Type: {{ state.selectedComponentType }}<br>
-            Available Components: {{ Object.keys(state.availableComponents).length }}<br>
-            Selected Component: {{ state.selectedComponent }}<br>
-            Can Scan Specific: {{ canScanSpecific }}<br>
-            <button @click="loadAvailableComponents" class="button button-small">Reload Components</button>
+        <!-- Vue.js app will be mounted here -->
+    </div>
+
+    <!-- Fallback content if Vue.js fails to load -->
+    <noscript>
+        <div class="notice notice-error">
+            <p><strong>JavaScript Required:</strong> This security scanner requires JavaScript to function properly.</p>
         </div>
+    </noscript>
 
-        <!-- Scan Controls (Direct Implementation) -->
-        <div class="wpqss-scan-controls-compact">
-            <div class="wpqss-scan-header">
-                <div class="wpqss-scan-title">
-                    <h2>Security Scanner</h2>
-                    <p>Detect vulnerabilities in plugins and themes</p>
-                </div>
-                <div class="wpqss-scan-actions">
-                    <button
-                        @click="startScan('plugins')"
-                        :disabled="state.isScanning"
-                        class="wpqss-btn wpqss-btn-primary"
-                    >
-                        <span class="dashicons dashicons-admin-plugins"></span>
-                        Scan Plugins
-                    </button>
-                    <button
-                        @click="startScan('themes')"
-                        :disabled="state.isScanning"
-                        class="wpqss-btn wpqss-btn-secondary"
-                    >
-                        <span class="dashicons dashicons-admin-appearance"></span>
-                        Scan Themes
-                    </button>
-                </div>
-            </div>
 
-            <div class="wpqss-scan-options">
-                <div class="wpqss-option-group">
-                    <label>Specific Component:</label>
-                    <div class="wpqss-inline-controls">
-                        <select
-                            v-model="state.selectedComponentType"
-                            @change="loadAvailableComponents"
-                            class="wpqss-select-compact"
-                        >
-                            <option value="plugins">Plugin</option>
-                            <option value="themes">Theme</option>
-                        </select>
-                        <select
-                            v-model="state.selectedComponent"
-                            :disabled="Object.keys(state.availableComponents).length === 0"
-                            class="wpqss-select-compact"
-                        >
-                            <option value="">Select component...</option>
-                            <option
-                                v-for="(component, key) in state.availableComponents"
-                                :key="key"
-                                :value="key"
-                            >
-                                {{ component.name }} (v{{ component.version }})
-                            </option>
-                        </select>
-                        <button
-                            @click="startSpecificScan(state.selectedComponentType, state.selectedComponent)"
-                            :disabled="!canScanSpecific || state.isScanning"
-                            class="wpqss-btn wpqss-btn-outline"
-                        >
-                            <span class="dashicons dashicons-search"></span>
-                            Scan
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+</div>
 
-        <!-- Progress Indicator -->
-        <div v-if="state.progress.visible" class="wpqss-progress">
-            <h3>Scanning in Progress</h3>
-            <div class="wpqss-progress-bar">
-                <div
-                    class="wpqss-progress-fill"
-                    :style="{ width: state.progress.percentage + '%' }"
-                ></div>
-            </div>
-            <p class="wpqss-progress-text">{{ state.progress.message }} ({{ state.progress.percentage }}%)</p>
-            <p class="description">
-                This may take a few minutes depending on the number of files to scan. Please do not close this page.
-            </p>
-        </div>
 
-        <!-- Results Container -->
-        <div v-if="hasResults || state.filteredResults" class="wpqss-results-container">
-            <!-- Filter Controls -->
-            <div class="wpqss-results-header">
-                <div class="wpqss-results-title">
-                    <h3>Scan Results</h3>
-                    <span class="wpqss-results-count">{{ resultsCountText }}</span>
-                </div>
-
-                <div class="wpqss-results-controls">
-                    <div class="wpqss-filter-group">
-                        <label>Filter by Severity:</label>
-                        <div class="wpqss-severity-filters">
-                            <button
-                                v-for="(count, severity) in severityCounts"
-                                :key="severity"
-                                @click="applyFilter(severity)"
-                                :class="[
-                                    'wpqss-filter-btn',
-                                    { 'active': state.currentFilter === severity },
-                                    severity !== 'all' ? 'wpqss-filter-' + severity : ''
-                                ]"
-                            >
-                                {{ severity.charAt(0).toUpperCase() + severity.slice(1) }}
-                                <span class="wpqss-filter-count">{{ count }}</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="wpqss-export-group">
-                        <label>Export:</label>
-                        <div class="wpqss-export-controls">
-                            <select
-                                v-model="state.exportFormat"
-                                class="wpqss-select-compact"
-                            >
-                                <option value="json">JSON</option>
-                                <option value="csv">CSV</option>
-                                <option value="html">HTML</option>
-                                <option value="xml">XML</option>
-                            </select>
-                            <button
-                                @click="exportResults(state.currentScanResults, 'all')"
-                                :disabled="!hasResults"
-                                class="wpqss-btn wpqss-btn-outline"
-                            >
-                                <span class="dashicons dashicons-download"></span>
-                                All Results
-                            </button>
-                            <button
-                                @click="exportResults(state.filteredResults, state.currentFilter)"
-                                :disabled="!hasResults"
-                                class="wpqss-btn wpqss-btn-outline"
-                            >
-                                <span class="dashicons dashicons-filter"></span>
-                                Filtered Results
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Results Display -->
-            <div class="wpqss-results">
-                <div v-if="!hasResults || !state.filteredResults || state.filteredResults.length === 0" class="wpqss-empty-state">
-                    <span class="dashicons dashicons-yes-alt"></span>
-                    <h3>No Vulnerabilities Found</h3>
-                    <p>Great! No security issues were detected in the scanned files.</p>
-                </div>
-
-                <div v-else>
-                    <div
-                        v-for="(component, index) in state.filteredResults"
-                        :key="index"
-                        class="wpqss-component"
-                        :class="{ 'expanded': component.expanded }"
-                    >
-                        <div class="wpqss-component-header" @click="component.expanded = !component.expanded">
-                            <h3>{{ component.name }}</h3>
-                            <div class="wpqss-component-meta">
-                                <span>{{ component.total_vulnerabilities }} vulnerabilities</span>
-                                <span
-                                    v-for="(count, severity) in component.severity_counts"
-                                    :key="severity"
-                                    v-if="count > 0"
-                                    :class="['wpqss-severity-badge', severity]"
-                                >
-                                    {{ count }} {{ severity }}
-                                </span>
-                                <span :class="['wpqss-toggle-icon', 'dashicons', component.expanded ? 'dashicons-arrow-up' : 'dashicons-arrow-down']"></span>
-                            </div>
-                        </div>
-
-                        <div v-if="component.expanded" class="wpqss-component-content">
-                            <div
-                                v-for="(file, fileIndex) in component.files"
-                                :key="fileIndex"
-                                class="wpqss-file"
-                            >
-                                <div class="wpqss-file-header">{{ file.file }}</div>
-                                <div
-                                    v-for="(vulnerability, vulnIndex) in file.vulnerabilities"
-                                    :key="vulnIndex"
-                                    :class="['wpqss-vulnerability', vulnerability.severity]"
-                                >
-                                    <div class="wpqss-vulnerability-header">
-                                        <h4 class="wpqss-vulnerability-title">{{ vulnerability.type }}</h4>
-                                        <span class="wpqss-vulnerability-line">Line {{ vulnerability.line }}</span>
-                                    </div>
-
-                                    <div class="wpqss-vulnerability-description">{{ vulnerability.description }}</div>
-
-                                    <div class="wpqss-code-block">{{ vulnerability.code }}</div>
-
-                                    <div v-if="vulnerability.context && vulnerability.context.length > 0" class="wpqss-code-context">
-                                        <div
-                                            v-for="line in vulnerability.context"
-                                            :key="line.line_number"
-                                            :class="['wpqss-context-line', { 'vulnerable': line.is_vulnerable }]"
-                                        >
-                                            <span class="wpqss-context-line-number">{{ line.line_number }}</span>{{ line.code }}
-                                        </div>
-                                    </div>
-
-                                    <div class="wpqss-remediation">
-                                        <div class="wpqss-remediation-title">Remediation:</div>
-                                        <div class="wpqss-remediation-text">{{ vulnerability.remediation }}</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Help Section -->
-        <div class="wpqss-help-section">
-            <h2><?php _e('Important Notes', 'wp-query-security-scanner'); ?></h2>
-            <div class="wpqss-help-content">
-                <div class="wpqss-help-item">
-                    <h3><?php _e('Manual Review Required', 'wp-query-security-scanner'); ?></h3>
-                    <p><?php _e('This scanner identifies potential security issues, but manual review is always required. Some findings may be false positives, and the scanner may not catch all vulnerabilities.', 'wp-query-security-scanner'); ?></p>
-                </div>
-
-                <div class="wpqss-help-item">
-                    <h3><?php _e('Test in Staging', 'wp-query-security-scanner'); ?></h3>
-                    <p><?php _e('Always test any security fixes in a staging environment before applying them to your live site.', 'wp-query-security-scanner'); ?></p>
-                </div>
-
-                <div class="wpqss-help-item">
-                    <h3><?php _e('Keep Updated', 'wp-query-security-scanner'); ?></h3>
-                    <p><?php _e('Regularly update WordPress, plugins, and themes to ensure you have the latest security patches.', 'wp-query-security-scanner'); ?></p>
-                </div>
-
-                <div class="wpqss-help-item">
-                    <h3><?php _e('Severity Levels', 'wp-query-security-scanner'); ?></h3>
-                    <ul>
-                        <li><strong class="severity-critical"><?php _e('Critical', 'wp-query-security-scanner'); ?></strong>: <?php _e('Immediate attention required - high risk of exploitation', 'wp-query-security-scanner'); ?></li>
-                        <li><strong class="severity-high"><?php _e('High', 'wp-query-security-scanner'); ?></strong>: <?php _e('Should be addressed soon - significant security risk', 'wp-query-security-scanner'); ?></li>
-                        <li><strong class="severity-medium"><?php _e('Medium', 'wp-query-security-scanner'); ?></strong>: <?php _e('Moderate risk - address when possible', 'wp-query-security-scanner'); ?></li>
-                        <li><strong class="severity-low"><?php _e('Low', 'wp-query-security-scanner'); ?></strong>: <?php _e('Low risk - consider addressing for best practices', 'wp-query-security-scanner'); ?></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="wpqss-footer">
-            <p>
-                <?php
-                printf(
-                    __('WP Query Security Scanner v%s - For support and updates, visit %s', 'wp-query-security-scanner'),
-                    WPQSS_VERSION,
-                    '<a href="https://github.com/your-repo/wp-query-security-scanner" target="_blank">GitHub</a>'
-                );
-                ?>
-            </p>
-        </div>
 </div>
 
 <style>
 /* Vue.js specific styles */
 [v-cloak] {
     display: none;
+}
+
+#wpfooter {
+    position: relative !important;
 }
 
 .wpqss-admin {
@@ -972,48 +720,4 @@ if (typeof Vue === 'undefined') {
     console.error('Vue.js is not loaded. Please ensure Vue.js is included before this script.');
 }
 </script>
-
-    <!-- Help Section -->
-    <div class="wpqss-help-section">
-        <h2><?php _e('Important Notes', 'wp-query-security-scanner'); ?></h2>
-        <div class="wpqss-help-content">
-            <div class="wpqss-help-item">
-                <h3><?php _e('Manual Review Required', 'wp-query-security-scanner'); ?></h3>
-                <p><?php _e('This scanner identifies potential security issues, but manual review is always required. Some findings may be false positives, and the scanner may not catch all vulnerabilities.', 'wp-query-security-scanner'); ?></p>
-            </div>
-            
-            <div class="wpqss-help-item">
-                <h3><?php _e('Test in Staging', 'wp-query-security-scanner'); ?></h3>
-                <p><?php _e('Always test any security fixes in a staging environment before applying them to your live site.', 'wp-query-security-scanner'); ?></p>
-            </div>
-            
-            <div class="wpqss-help-item">
-                <h3><?php _e('Keep Updated', 'wp-query-security-scanner'); ?></h3>
-                <p><?php _e('Regularly update WordPress, plugins, and themes to ensure you have the latest security patches.', 'wp-query-security-scanner'); ?></p>
-            </div>
-            
-            <div class="wpqss-help-item">
-                <h3><?php _e('Severity Levels', 'wp-query-security-scanner'); ?></h3>
-                <ul>
-                    <li><strong class="severity-critical"><?php _e('Critical', 'wp-query-security-scanner'); ?></strong>: <?php _e('Immediate attention required - high risk of exploitation', 'wp-query-security-scanner'); ?></li>
-                    <li><strong class="severity-high"><?php _e('High', 'wp-query-security-scanner'); ?></strong>: <?php _e('Should be addressed soon - significant security risk', 'wp-query-security-scanner'); ?></li>
-                    <li><strong class="severity-medium"><?php _e('Medium', 'wp-query-security-scanner'); ?></strong>: <?php _e('Moderate risk - address when possible', 'wp-query-security-scanner'); ?></li>
-                    <li><strong class="severity-low"><?php _e('Low', 'wp-query-security-scanner'); ?></strong>: <?php _e('Low risk - consider addressing for best practices', 'wp-query-security-scanner'); ?></li>
-                </ul>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Footer -->
-    <div class="wpqss-footer">
-        <p>
-            <?php 
-            printf(
-                __('WP Query Security Scanner v%s - For support and updates, visit %s', 'wp-query-security-scanner'),
-                WPQSS_VERSION,
-                '<a href="https://github.com/your-repo/wp-query-security-scanner" target="_blank">GitHub</a>'
-            ); 
-            ?>
-        </p>
-    </div>
 </div>
