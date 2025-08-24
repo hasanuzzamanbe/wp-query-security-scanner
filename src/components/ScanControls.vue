@@ -12,7 +12,7 @@
           class="wpqss-btn wpqss-btn-primary"
         >
           <span class="dashicons dashicons-admin-plugins"></span>
-          Scan Plugins
+          Scan All Plugins
         </button>
         <button 
           @click="$emit('scan-themes')"
@@ -20,7 +20,7 @@
           class="wpqss-btn wpqss-btn-secondary"
         >
           <span class="dashicons dashicons-admin-appearance"></span>
-          Scan Themes
+          Scan All Themes
         </button>
       </div>
     </div>
@@ -55,7 +55,7 @@
           <button 
             @click="handleSpecificScan"
             :disabled="!canScanSpecific || isScanning"
-            class="wpqss-btn wpqss-btn-outline"
+            class="wpqss-btn wpqss-btn-primary"
           >
             <span class="dashicons dashicons-search"></span>
             Scan
@@ -156,7 +156,6 @@ export default {
 }
 
 .wpqss-btn:disabled {
-  opacity: 0.6;
   cursor: not-allowed;
 }
 

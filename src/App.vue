@@ -91,7 +91,7 @@ export default {
       availableComponents: {},
       selectedComponentType: 'plugins',
       selectedComponent: '',
-      exportFormat: 'json',
+      exportFormat: 'html',
       progress: {
         visible: false,
         percentage: 0,

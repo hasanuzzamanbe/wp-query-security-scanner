@@ -10,7 +10,7 @@ lerna-debug.log*
 .pnpm-debug.log*
 
 # Built assets and distribution files
-dist/
+dist/*
 dist-ssr/
 assets/dist/
 build/
@@ -29,7 +29,7 @@ build/
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
-.idea/
+.idea/*
 *.swp
 *.swo
 *~
@@ -154,3 +154,8 @@ public
 
 # Snowpack dependency directory
 web_modules/
+/.vscode
+/.idea
+.idea/AugmentWebviewStateStore.xml
+.idea/AugmentWebviewStateStore.xml
+/.idea

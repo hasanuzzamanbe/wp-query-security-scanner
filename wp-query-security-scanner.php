@@ -9,6 +9,9 @@
  * Requires at least: 5.0
  * Tested up to: 6.3
  * Requires PHP: 7.4
+ *
+ * SECURITY SCANNER IGNORE: This is the security scanner plugin itself.
+ * Contains AJAX handlers with proper nonce verification and capability checks.
  */
 
 if (!defined('ABSPATH')) {
@@ -66,6 +69,8 @@ class WPQuerySecurityScanner {
         add_action('wp_ajax_wpqss_export_report', [$this, 'ajax_export_report']);
         add_action('wp_ajax_wpqss_get_scan_progress', [$this, 'ajax_get_scan_progress']);
         add_action('wp_ajax_wpqss_download_report', [$this, 'ajax_download_report']);
+        add_action('wp_ajax_wpqss_cleanup_reports', [$this, 'ajax_cleanup_reports']);
+        add_action('wp_ajax_wpqss_get_cleanup_stats', [$this, 'ajax_get_cleanup_stats']);
 
         // Add admin notices
         add_action('admin_notices', [$this, 'admin_notices']);
@@ -400,10 +405,10 @@ class WPQuerySecurityScanner {
 
             <div class="wpqss-scan-controls">
                 <button id="wpqss-scan-plugins" class="button button-primary">
-                    <?php _e('Scan Plugins', 'wp-query-security-scanner'); ?>
+                    <?php _e('Scan All Plugins', 'wp-query-security-scanner'); ?>
                 </button>
                 <button id="wpqss-scan-themes" class="button button-secondary">
-                    <?php _e('Scan Themes', 'wp-query-security-scanner'); ?>
+                    <?php _e('Scan All Themes', 'wp-query-security-scanner'); ?>
                 </button>
                 <button id="wpqss-export-report" class="button" disabled>
                     <?php _e('Export Report', 'wp-query-security-scanner'); ?>
@@ -463,6 +468,76 @@ class WPQuerySecurityScanner {
                 return '';
         }
     }
+
+    /**
+     * AJAX handler for cleaning up old reports
+     */
+    public function ajax_cleanup_reports() {
+        check_ajax_referer('wpqss_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_die(__('Insufficient permissions', 'wp-query-security-scanner'));
+        }
+
+        $cleanup_type = sanitize_text_field($_POST['cleanup_type'] ?? 'old');
+
+        $report_generator = new WPQSS_Report_Generator();
+
+        if ($cleanup_type === 'all') {
+            $results = $report_generator->cleanup_all_reports();
+            $message = sprintf(
+                __('All reports cleaned: %d files deleted (%s freed)', 'wp-query-security-scanner'),
+                $results['deleted_count'],
+                $report_generator->format_file_size($results['deleted_size'])
+            );
+        } else {
+            // Clean files older than 24 hours by default
+            $results = $report_generator->cleanup_old_reports(24);
+            $message = sprintf(
+                __('Old reports cleaned: %d files deleted (%s freed), %d files kept', 'wp-query-security-scanner'),
+                $results['deleted_count'],
+                $report_generator->format_file_size($results['deleted_size']),
+                $results['kept_count']
+            );
+        }
+
+        wp_send_json_success([
+            'message' => $message,
+            'results' => $results
+        ]);
+    }
+
+    /**
+     * AJAX handler for getting cleanup statistics
+     */
+    public function ajax_get_cleanup_stats() {
+        check_ajax_referer('wpqss_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_die(__('Insufficient permissions', 'wp-query-security-scanner'));
+        }
+
+        $report_generator = new WPQSS_Report_Generator();
+        $stats = $report_generator->get_cleanup_stats();
+
+        // Format the stats for display
+        $formatted_stats = [
+            'total_files' => $stats['total_files'],
+            'total_size' => $report_generator->format_file_size($stats['total_size']),
+            'total_size_bytes' => $stats['total_size'],
+            'files_by_type' => $stats['files_by_type'],
+            'oldest_file' => $stats['oldest_file'] ? [
+                'name' => $stats['oldest_file']['name'],
+                'age_days' => round((time() - $stats['oldest_file']['mtime']) / 86400, 1)
+            ] : null,
+            'newest_file' => $stats['newest_file'] ? [
+                'name' => $stats['newest_file']['name'],
+                'age_hours' => round((time() - $stats['newest_file']['mtime']) / 3600, 1)
+            ] : null
+        ];
+
+        wp_send_json_success($formatted_stats);
+    }
 }
 
 // Initialize the plugin
@@ -483,6 +558,11 @@ register_activation_hook(__FILE__, function() {
         // Add .htaccess to protect reports
         file_put_contents($wpqss_dir . '/.htaccess', "deny from all\n");
     }
+
+    // Schedule automatic cleanup (weekly)
+    if (!wp_next_scheduled('wpqss_cleanup_reports')) {
+        wp_schedule_event(time(), 'weekly', 'wpqss_cleanup_reports');
+    }
 });
 
 // Deactivation hook
@@ -490,4 +570,23 @@ register_deactivation_hook(__FILE__, function() {
     // Clean up transients
     global $wpdb;
     $wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE 'wpqss_%'");
+
+    // Clear scheduled cleanup
+    wp_clear_scheduled_hook('wpqss_cleanup_reports');
+});
+
+// Scheduled cleanup hook
+add_action('wpqss_cleanup_reports', function() {
+    $report_generator = new WPQSS_Report_Generator();
+    $results = $report_generator->cleanup_old_reports(168); // Keep files for 7 days (168 hours)
+
+    // Log cleanup results for debugging
+    if ($results['deleted_count'] > 0) {
+        error_log(sprintf(
+            'WPQSS: Automatic cleanup completed - %d files deleted (%s freed), %d files kept',
+            $results['deleted_count'],
+            $report_generator->format_file_size($results['deleted_size']),
+            $results['kept_count']
+        ));
+    }
 });

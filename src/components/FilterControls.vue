@@ -38,21 +38,21 @@
             <option value="html">HTML</option>
             <option value="xml">XML</option>
           </select>
-          <button 
-            @click="$emit('export-all')"
-            :disabled="!hasResults"
-            class="wpqss-btn wpqss-btn-outline"
-          >
-            <span class="dashicons dashicons-download"></span>
-            All Results
-          </button>
+<!--          <button -->
+<!--            @click="$emit('export-all')"-->
+<!--            :disabled="!hasResults"-->
+<!--            class="wpqss-btn wpqss-btn-outline"-->
+<!--          >-->
+<!--            <span class="dashicons dashicons-download"></span>-->
+<!--            All Results-->
+<!--          </button>-->
           <button 
             @click="$emit('export-filtered')"
             :disabled="!hasResults"
             class="wpqss-btn wpqss-btn-outline"
           >
             <span class="dashicons dashicons-filter"></span>
-            Filtered Results
+            Download Filtered
           </button>
         </div>
       </div>
