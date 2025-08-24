@@ -97,6 +97,12 @@ class WPQuerySecurityScanner {
             'title' => __('Vulnerability Types', 'wp-query-security-scanner'),
             'content' => $this->get_help_content('vulnerabilities')
         ]);
+
+        $screen->add_help_tab([
+            'id' => 'wpqss-features',
+            'title' => __('Features', 'wp-query-security-scanner'),
+            'content' => $this->get_help_content('features')
+        ]);
     }
 
     public function enqueue_admin_assets($hook) {
@@ -111,15 +117,32 @@ class WPQuerySecurityScanner {
             WPQSS_VERSION
         );
 
+        // Enqueue Vue.js from CDN
         wp_enqueue_script(
-            'wpqss-admin-scripts',
-            WPQSS_PLUGIN_URL . 'assets/admin-scripts.js',
-            ['jquery'],
+            'vue-js',
+            'https://unpkg.com/vue@3/dist/vue.global.js',
+            [],
+            '3.3.4',
+            false
+        );
+
+        wp_enqueue_script(
+            'wpqss-vue-components',
+            WPQSS_PLUGIN_URL . 'assets/vue-components.js',
+            ['vue-js'],
             WPQSS_VERSION,
             true
         );
 
-        wp_localize_script('wpqss-admin-scripts', 'wpqss_ajax', [
+        wp_enqueue_script(
+            'wpqss-vue-app',
+            WPQSS_PLUGIN_URL . 'assets/admin-vue-app.js',
+            ['vue-js', 'wpqss-vue-components'],
+            WPQSS_VERSION,
+            true
+        );
+
+        wp_localize_script('wpqss-vue-app', 'wpqss_ajax', [
             'url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('wpqss_nonce'),
             'strings' => [
@@ -236,8 +259,10 @@ class WPQuerySecurityScanner {
 
         $format = sanitize_text_field($_POST['format'] ?? 'json');
         $scan_results = json_decode(stripslashes($_POST['scan_results'] ?? '[]'), true);
+        $filter_type = sanitize_text_field($_POST['filter_type'] ?? 'all');
+        $filename_suffix = sanitize_text_field($_POST['filename_suffix'] ?? '');
 
-        $report = $this->report_generator->generate_report($scan_results, $format);
+        $report = $this->report_generator->generate_report($scan_results, $format, $filter_type, $filename_suffix);
 
         wp_send_json_success([
             'download_url' => $report['url'],
@@ -337,6 +362,7 @@ class WPQuerySecurityScanner {
 
     public function render_admin_page() {
         $template_file = WPQSS_PLUGIN_DIR . 'templates/admin-page.php';
+
         if (file_exists($template_file)) {
             include $template_file;
         } else {
@@ -397,6 +423,17 @@ class WPQuerySecurityScanner {
                     <li><strong>' . __('Cross-Site Scripting (XSS)', 'wp-query-security-scanner') . '</strong>: ' . __('Unescaped output that could allow script injection.', 'wp-query-security-scanner') . '</li>
                     <li><strong>' . __('CSRF', 'wp-query-security-scanner') . '</strong>: ' . __('Missing nonce verification for sensitive operations.', 'wp-query-security-scanner') . '</li>
                     <li><strong>' . __('File Inclusion', 'wp-query-security-scanner') . '</strong>: ' . __('Unsafe file includes that could lead to code execution.', 'wp-query-security-scanner') . '</li>
+                </ul>';
+
+            case 'features':
+                return '<h4>' . __('Advanced Features', 'wp-query-security-scanner') . '</h4>
+                <ul>
+                    <li><strong>' . __('Real-time Filtering', 'wp-query-security-scanner') . '</strong>: ' . __('Filter vulnerabilities by severity instantly', 'wp-query-security-scanner') . '</li>
+                    <li><strong>' . __('Specific Component Scanning', 'wp-query-security-scanner') . '</strong>: ' . __('Scan individual plugins or themes for faster analysis', 'wp-query-security-scanner') . '</li>
+                    <li><strong>' . __('Multiple Export Formats', 'wp-query-security-scanner') . '</strong>: ' . __('Export reports in JSON, CSV, HTML, or XML formats', 'wp-query-security-scanner') . '</li>
+                    <li><strong>' . __('Filtered Exports', 'wp-query-security-scanner') . '</strong>: ' . __('Export only specific severity levels', 'wp-query-security-scanner') . '</li>
+                    <li><strong>' . __('Code Context', 'wp-query-security-scanner') . '</strong>: ' . __('View vulnerable code with surrounding context', 'wp-query-security-scanner') . '</li>
+                    <li><strong>' . __('Progress Tracking', 'wp-query-security-scanner') . '</strong>: ' . __('Real-time progress updates during scans', 'wp-query-security-scanner') . '</li>
                 </ul>';
 
             default:

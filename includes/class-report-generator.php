@@ -26,31 +26,33 @@ class WPQSS_Report_Generator {
     
     /**
      * Generate security report
-     * 
+     *
      * @param array $scan_results
      * @param string $format
+     * @param string $filter_type
+     * @param string $filename_suffix
      * @return array
      */
-    public function generate_report($scan_results, $format = 'json') {
+    public function generate_report($scan_results, $format = 'json', $filter_type = 'all', $filename_suffix = '') {
         $timestamp = current_time('Y-m-d_H-i-s');
-        $filename = "security-report_{$timestamp}.{$format}";
+        $filename = "security-report_{$timestamp}{$filename_suffix}.{$format}";
         $file_path = $this->upload_dir . '/' . $filename;
         
         switch ($format) {
             case 'json':
-                $content = $this->generate_json_report($scan_results);
+                $content = $this->generate_json_report($scan_results, $filter_type);
                 break;
             case 'csv':
-                $content = $this->generate_csv_report($scan_results);
+                $content = $this->generate_csv_report($scan_results, $filter_type);
                 break;
             case 'html':
-                $content = $this->generate_html_report($scan_results);
+                $content = $this->generate_html_report($scan_results, $filter_type);
                 break;
             case 'xml':
-                $content = $this->generate_xml_report($scan_results);
+                $content = $this->generate_xml_report($scan_results, $filter_type);
                 break;
             default:
-                $content = $this->generate_json_report($scan_results);
+                $content = $this->generate_json_report($scan_results, $filter_type);
                 $format = 'json';
         }
         
@@ -67,11 +69,12 @@ class WPQSS_Report_Generator {
     
     /**
      * Generate JSON report
-     * 
+     *
      * @param array $scan_results
+     * @param string $filter_type
      * @return string
      */
-    private function generate_json_report($scan_results) {
+    private function generate_json_report($scan_results, $filter_type = 'all') {
         $report = [
             'scan_info' => [
                 'timestamp' => current_time('c'),
@@ -79,25 +82,34 @@ class WPQSS_Report_Generator {
                 'php_version' => PHP_VERSION,
                 'scanner_version' => WPQSS_VERSION,
                 'site_url' => get_site_url(),
+                'filter_applied' => $filter_type,
                 'total_components' => count($scan_results),
                 'total_vulnerabilities' => $this->count_total_vulnerabilities($scan_results)
             ],
             'summary' => $this->generate_summary($scan_results),
             'components' => $scan_results
         ];
-        
+
         return wp_json_encode($report, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
     }
     
     /**
      * Generate CSV report
-     * 
+     *
      * @param array $scan_results
+     * @param string $filter_type
      * @return string
      */
-    private function generate_csv_report($scan_results) {
+    private function generate_csv_report($scan_results, $filter_type = 'all') {
         $csv_data = [];
-        
+
+        // Add filter info as comment
+        if ($filter_type !== 'all') {
+            $csv_data[] = ["# Filtered by severity: {$filter_type}"];
+            $csv_data[] = ["# Generated: " . current_time('c')];
+            $csv_data[] = []; // Empty row
+        }
+
         // CSV Headers
         $csv_data[] = [
             'Component',
@@ -134,11 +146,12 @@ class WPQSS_Report_Generator {
     
     /**
      * Generate HTML report
-     * 
+     *
      * @param array $scan_results
+     * @param string $filter_type
      * @return string
      */
-    private function generate_html_report($scan_results) {
+    private function generate_html_report($scan_results, $filter_type = 'all') {
         $summary = $this->generate_summary($scan_results);
         
         ob_start();
@@ -177,6 +190,9 @@ class WPQSS_Report_Generator {
                 <p><strong>Generated:</strong> <?php echo current_time('F j, Y g:i A'); ?></p>
                 <p><strong>Site:</strong> <?php echo esc_html(get_site_url()); ?></p>
                 <p><strong>WordPress Version:</strong> <?php echo esc_html(get_bloginfo('version')); ?></p>
+                <?php if ($filter_type !== 'all'): ?>
+                <p><strong>Filter Applied:</strong> <span class="severity-<?php echo esc_attr($filter_type); ?>"><?php echo esc_html(ucfirst($filter_type)); ?> Severity Only</span></p>
+                <?php endif; ?>
             </div>
             
             <div class="summary">
@@ -258,11 +274,12 @@ class WPQSS_Report_Generator {
     
     /**
      * Generate XML report
-     * 
+     *
      * @param array $scan_results
+     * @param string $filter_type
      * @return string
      */
-    private function generate_xml_report($scan_results) {
+    private function generate_xml_report($scan_results, $filter_type = 'all') {
         $xml = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><security_report></security_report>');
         
         // Add scan info

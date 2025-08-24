@@ -140,40 +140,46 @@
 .wpqss-summary-card.medium .count { color: #ffc107; }
 .wpqss-summary-card.low .count { color: #28a745; }
 
-/* Component Cards */
+/* Compact Component Cards */
 .wpqss-component {
-    border-bottom: 1px solid #eee;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    overflow: hidden;
+    transition: all 0.2s ease;
 }
 
-.wpqss-component:last-child {
-    border-bottom: none;
+.wpqss-component:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .wpqss-component-header {
-    background: #f9f9f9;
-    padding: 15px 20px;
-    border-bottom: 1px solid #eee;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 12px 16px;
     cursor: pointer;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-bottom: 1px solid #e9ecef;
 }
 
 .wpqss-component-header:hover {
-    background: #f1f1f1;
+    background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
 }
 
 .wpqss-component-header h3 {
     margin: 0;
-    color: #23282d;
+    color: #2c3e50;
+    font-size: 16px;
+    font-weight: 600;
 }
 
 .wpqss-component-meta {
     display: flex;
-    gap: 15px;
+    gap: 12px;
     align-items: center;
-    color: #666;
-    font-size: 14px;
+    color: #6c757d;
+    font-size: 13px;
 }
 
 .wpqss-severity-badge {
@@ -226,38 +232,57 @@
     color: #666;
 }
 
-/* Vulnerabilities */
+/* Compact Vulnerabilities */
 .wpqss-vulnerability {
-    padding: 15px 20px;
-    border-left: 4px solid #ddd;
+    padding: 12px 16px;
+    border-left: 3px solid #ddd;
     margin: 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-.wpqss-vulnerability.critical { border-left-color: #dc3545; background: #fdf2f2; }
-.wpqss-vulnerability.high { border-left-color: #fd7e14; background: #fef8f1; }
-.wpqss-vulnerability.medium { border-left-color: #ffc107; background: #fffbf0; }
-.wpqss-vulnerability.low { border-left-color: #28a745; background: #f1f8f4; }
+.wpqss-vulnerability:last-child {
+    border-bottom: none;
+}
+
+.wpqss-vulnerability.critical {
+    border-left-color: #dc3545;
+    background: linear-gradient(90deg, rgba(220, 53, 69, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
+}
+.wpqss-vulnerability.high {
+    border-left-color: #fd7e14;
+    background: linear-gradient(90deg, rgba(253, 126, 20, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
+}
+.wpqss-vulnerability.medium {
+    border-left-color: #ffc107;
+    background: linear-gradient(90deg, rgba(255, 193, 7, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
+}
+.wpqss-vulnerability.low {
+    border-left-color: #28a745;
+    background: linear-gradient(90deg, rgba(40, 167, 69, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
+}
 
 .wpqss-vulnerability-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 10px;
+    align-items: center;
+    margin-bottom: 8px;
 }
 
 .wpqss-vulnerability-title {
-    font-weight: bold;
-    color: #23282d;
+    font-weight: 600;
+    color: #2c3e50;
     margin: 0;
+    font-size: 14px;
 }
 
 .wpqss-vulnerability-line {
-    background: #23282d;
+    background: #6c757d;
     color: #fff;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-size: 12px;
-    font-family: monospace;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+    font-weight: 500;
 }
 
 .wpqss-vulnerability-description {

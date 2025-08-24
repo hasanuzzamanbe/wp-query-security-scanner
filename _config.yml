@@ -1,0 +1,37 @@
+# Jekyll Cayman theme configuration for a single-page WordPress plugin site
+
+title: "WP Query Security Scanner"
+description: "A modern WordPress plugin that enhances your website. Fast, secure, and easy to use."
+theme: jekyll-theme-cayman
+url: "https://your-github-username.github.io/your-plugin-repo" # Update with your repo URL
+
+# Cayman theme options
+show_downloads: true
+
+# For a single page, use index.md for your content.
+# You can point navigation to anchors within index.md if desired.
+github:
+  is_project_page: true
+  repository_url: "https://github.com/hasanuzzamanbe/wp-query-security-scanner
+
+# Optional: Social links
+social_links:
+  - name: "GitHub"
+    url: "https://github.com/hasanuzzamanbe/wp-query-security-scanner"
+
+# Google Analytics (optional)
+#google_analytics: UA-XXXXXXXXX-X
+
+# Plugins (optional)
+plugins:
+  - jekyll-seo-tag
+  - jekyll-feed
+
+# Exclude files from build
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+
+# Build settings
+markdown: kramdown
